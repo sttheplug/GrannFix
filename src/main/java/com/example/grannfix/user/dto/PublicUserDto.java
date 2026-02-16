@@ -1,4 +1,5 @@
 package com.example.grannfix.user.dto;
+
 import java.util.UUID;
 
 public record PublicUserDto(
@@ -7,6 +8,6 @@ public record PublicUserDto(
         String bio,
         String area,
         Double ratingAverage,
-        Integer ratingCount
+        Integer ratingCount,
+        String phoneNumber // optional, could be null
 ) {}
-

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,8 +17,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phoneNumber;
+
+    @Column(unique = true)
+    private String email;
+
+    @Column
+    private String password;
 
     @Column(nullable = false)
     private String name;
@@ -31,12 +38,15 @@ public class User {
     @Column
     private String street;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean verified = false;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER;
@@ -47,18 +57,18 @@ public class User {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    @Column
-    private Double ratingAverage;
+    @Builder.Default
+    @Column(nullable = false)
+    private Double ratingAverage = 0.0;
 
-    @Column
-    private Integer ratingCount;
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer ratingCount = 0;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.ratingAverage = 0.0;
-        this.ratingCount = 0;
     }
 
     @PreUpdate

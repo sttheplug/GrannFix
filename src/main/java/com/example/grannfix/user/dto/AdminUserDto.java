@@ -1,4 +1,5 @@
 package com.example.grannfix.user.dto;
+
 import com.example.grannfix.user.model.Role;
 import java.time.Instant;
 import java.util.UUID;
@@ -6,6 +7,8 @@ import java.util.UUID;
 public record AdminUserDto(
         UUID id,
         String name,
+        String email,        // new field
+        String phoneNumber,  // new field
         String area,
         boolean active,
         boolean verified,

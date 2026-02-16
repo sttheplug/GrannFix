@@ -1,4 +1,4 @@
-package com.example.grannfix.user;
+package com.example.grannfix.user.repository;
 
 import com.example.grannfix.user.model.Role;
 import com.example.grannfix.user.model.User;
@@ -15,6 +15,8 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByPhoneNumber(String phoneNumber);
+    boolean existsByEmail(String email);
+    Optional<User> findByEmail(String email);
     Optional<User> findByPhoneNumberAndActiveTrue(String phoneNumber);
     Optional<User> findByIdAndActiveTrue(UUID id);
 }

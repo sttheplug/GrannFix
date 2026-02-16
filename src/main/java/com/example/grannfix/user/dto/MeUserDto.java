@@ -5,10 +5,10 @@ import java.util.UUID;
 public record MeUserDto(
         UUID id,
         String phoneNumber,
+        String email,      // new field
         String name,
         String bio,
         String area,
         String street,
         boolean verified
 ) {}
-

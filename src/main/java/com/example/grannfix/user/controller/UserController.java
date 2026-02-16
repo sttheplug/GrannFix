@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -24,15 +24,14 @@ public class UserController {
     }
 
     @GetMapping("/users/me")
-    public MeUserDto getMe(Authentication auth) {
-        UUID userId = extractUserId(auth);
-        return userService.getMe(userId);
+    public MeUserDto getMe(@AuthenticationPrincipal String userId) {
+        return userService.getMe(UUID.fromString(userId));
     }
 
     @PutMapping("/users/me")
-    public MeUserDto updateMe(Authentication auth, @Valid @RequestBody UpdateMeRequest req) {
-        UUID userId = extractUserId(auth);
-        return userService.updateMe(userId, req);
+    public MeUserDto updateMe(@AuthenticationPrincipal String userId,
+                              @Valid @RequestBody UpdateMeRequest req) {
+        return userService.updateMe(UUID.fromString(userId), req);
     }
 
     @GetMapping("/users/{id}")
@@ -52,7 +51,4 @@ public class UserController {
         userService.removeUser(id);
     }
 
-    private UUID extractUserId(Authentication auth) {
-        return UUID.fromString(auth.getName());
-    }
 }
