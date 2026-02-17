@@ -2,8 +2,9 @@ package com.example.grannfix.auth.service;
 
 import com.example.grannfix.auth.dto.LoginRequest;
 import com.example.grannfix.auth.dto.RegisterRequest;
-import com.example.grannfix.auth.dto.VerifyOtpResponse;
+import com.example.grannfix.auth.dto.AuthResponse;
 import com.example.grannfix.auth.security.JwtService;
+import com.example.grannfix.auth.sms.SmsSender;
 import com.example.grannfix.user.repository.UserRepository;
 import com.example.grannfix.user.dto.MeUserDto;
 import com.example.grannfix.user.model.User;
@@ -18,41 +19,50 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final OtpService otpService;
+    private final SmsSender smsSender;
 
     public AuthService(UserRepository userRepository,
                        JwtService jwtService,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder, OtpService otpService, SmsSender smsSender) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.otpService = otpService;
+        this.smsSender = smsSender;
     }
 
     public void sendOtp(String phoneNumber) {
-        // TODO: generate OTP + store + send SMS
-        System.out.println("OTP sent to " + phoneNumber);
+        phoneNumber = normalizePhone(phoneNumber);
+        validatePhone(phoneNumber);
+        String code = otpService.generateAndStore(phoneNumber);
+        System.out.println("Your GrannFix verification code is: " + code + " (valid for 5 minutes)");
+        //smsSender.send(phoneNumber, message);
     }
 
-    public VerifyOtpResponse verifyOtp(String phoneNumber, String code) {
-        // TODO: validate OTP properly (currently missing)
-        User user = userRepository
-                .findByPhoneNumber(phoneNumber)
-                .orElseGet(() -> createUserWithPhone(phoneNumber));
+    public AuthResponse verifyOtp(String phoneNumber, String code) {
+        String normalizedPhone = normalizePhone(phoneNumber);
+        validatePhone(normalizedPhone);
 
-        return tokensResponse(user);
+        boolean ok = otpService.verify(normalizedPhone, code);
+        if (!ok) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired OTP");
+        }
+        User user = userRepository.findByPhoneNumber(normalizedPhone)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!user.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
+        }
+        if (!user.isVerified()) {
+            user.setVerified(true);
+            userRepository.save(user);
+        }
+        return buildAuthResponse(user);
     }
 
-    private User createUserWithPhone(String phoneNumber) {
-        User user = User.builder()
-                .phoneNumber(phoneNumber)
-                .name("New User")
-                .area("Unknown")
-                .active(true)
-                .verified(false)
-                .build();
-        return userRepository.save(user);
-    }
-
-    public VerifyOtpResponse register(RegisterRequest req) {
+    public AuthResponse register(RegisterRequest req) {
         String email = req.email().trim().toLowerCase();
 
         if (userRepository.existsByEmail(email)) {
@@ -69,10 +79,10 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-        return tokensResponse(user);
+        return buildAuthResponse(user);
     }
 
-    public VerifyOtpResponse login(LoginRequest req) {
+    public AuthResponse login(LoginRequest req) {
         String email = req.email().trim().toLowerCase();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
@@ -83,10 +93,10 @@ public class AuthService {
         if (!user.isActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
         }
-        return tokensResponse(user);
+        return buildAuthResponse(user);
     }
 
-    private VerifyOtpResponse tokensResponse(User user) {
+    private AuthResponse buildAuthResponse(User user) {
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
@@ -100,7 +110,32 @@ public class AuthService {
                 user.getStreet(),
                 user.isVerified()
         );
-
-        return new VerifyOtpResponse(accessToken, refreshToken, userDto);
+        return new AuthResponse(accessToken, refreshToken, userDto);
     }
+    private String normalizePhone(String phoneNumber) {
+        if (phoneNumber == null) return null;
+        String p = phoneNumber.replaceAll("[^0-9+]", "");
+
+        if (p.startsWith("+")) {
+            return p;
+        }
+        if (p.startsWith("00")) {
+            return "+" + p.substring(2);
+        }
+        if (p.startsWith("46")) {
+            return "+" + p;
+        }
+        if (p.startsWith("0")) {
+            return "+46" + p.substring(1);
+        }
+        return p;
+    }
+
+
+    private void validatePhone(String phoneNumber) {
+        if (!phoneNumber.matches("^\\+[1-9]\\d{7,14}$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid phone number");
+        }
+    }
+
 }

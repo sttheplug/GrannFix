@@ -9,14 +9,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
-
-    // ---------------- OTP ----------------
 
     @PostMapping("/send-otp")
     public ResponseEntity<String> sendOtp(@RequestParam String phoneNumber) {
@@ -25,27 +22,27 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<VerifyOtpResponse> verifyOtp(
+    public ResponseEntity<AuthResponse> verifyOtp(
             @RequestBody @Valid VerifyOtpRequest request) {
 
-        VerifyOtpResponse response =
+        AuthResponse response =
                 authService.verifyOtp(request.phoneNumber(), request.code());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<VerifyOtpResponse> register(
+    public ResponseEntity<AuthResponse> register(
             @RequestBody @Valid RegisterRequest request) {
 
-        VerifyOtpResponse response = authService.register(request);
+        AuthResponse response = authService.register(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<VerifyOtpResponse> login(
+    public ResponseEntity<AuthResponse> login(
             @RequestBody @Valid LoginRequest request) {
 
-        VerifyOtpResponse response = authService.login(request);
+        AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 }

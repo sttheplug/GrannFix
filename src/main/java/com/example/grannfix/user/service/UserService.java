@@ -71,22 +71,11 @@ public class UserService {
 
     @Transactional
     public void removeUser(UUID userId) {
-        User u = userRepository.findByIdAndActiveTrue(userId)
+        User u = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         userRepository.deleteById(u.getId());
     }
 
-    @Transactional(readOnly = true)
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    }
-
-    @Transactional(readOnly = true)
-    public User findByPhoneNumber(String phoneNumber) {
-        return userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    }
     private MeUserDto mapToMeDto(User u) {
         return new MeUserDto(
                 u.getId(),
