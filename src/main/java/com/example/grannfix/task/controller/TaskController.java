@@ -5,7 +5,6 @@ import com.example.grannfix.task.model.Task;
 import com.example.grannfix.task.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +20,12 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Task> createTask(Authentication authentication,
+    @PostMapping
+    public ResponseEntity<Task> createTask(
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody CreateTaskRequest req) {
 
-        UUID userId = UUID.fromString(authentication.getName());
-        Task savedTask = taskService.addTask(userId, req);
+        Task savedTask = taskService.addTask(UUID.fromString(userId), req);
         return ResponseEntity
                 .created(URI.create("/tasks/" + savedTask.getId()))
                 .body(savedTask);

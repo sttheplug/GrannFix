@@ -16,42 +16,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping
+@RequestMapping("/users")
 public class UserController {
+
     private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @GetMapping("/users/me")
+    @GetMapping("/me")
     public MeUserDto getMe(@AuthenticationPrincipal String userId) {
         return userService.getMe(UUID.fromString(userId));
     }
 
-    @PutMapping("/users/me")
+    @PutMapping("/me")
     public MeUserDto updateMe(@AuthenticationPrincipal String userId,
                               @Valid @RequestBody UpdateMeRequest req) {
         return userService.updateMe(UUID.fromString(userId), req);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public PublicUserDto getPublicUser(@PathVariable UUID id) {
         return userService.getPublicUser(id);
     }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users")
-    public Page<AdminUserDto> getAllUsers(Pageable pageable) {
-        return userService.getAllUsers(pageable);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/admin/users/{id}")
-    public ResponseEntity<Void> removeUser(@PathVariable UUID id) {
-        userService.removeUser(id);
-        return ResponseEntity.noContent().build();
-    }
-
-
 }
