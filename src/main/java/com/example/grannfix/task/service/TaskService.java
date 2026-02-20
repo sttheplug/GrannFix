@@ -1,6 +1,7 @@
 package com.example.grannfix.task.service;
 
 import com.example.grannfix.task.dto.CreateTaskRequest;
+import com.example.grannfix.task.dto.TaskResponse;
 import com.example.grannfix.task.model.Task;
 import com.example.grannfix.task.repository.TaskRepository;
 import com.example.grannfix.user.model.User;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -48,5 +50,32 @@ public class TaskService {
                 .offeredPrice(price)
                 .build();
         return taskRepository.save(task);
+    }
+    @Transactional(readOnly = true)
+    public List<TaskResponse> getMyTasks(UUID userId) {
+        if (!userRepository.existsByIdAndActiveTrue(userId)) {
+            throw new IllegalArgumentException("User not found: " + userId);
+        }
+        return taskRepository.findByCreatedBy_Id(userId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private TaskResponse toResponse(Task t) {
+        return new TaskResponse(
+                t.getId(),
+                t.getTitle(),
+                t.getDescription(),
+                t.getCity(),
+                t.getArea(),
+                t.getStreet(),
+                t.getOfferedPrice(),
+                t.getStatus(),
+                t.isActive(),
+                t.getCreatedAt(),
+                t.getUpdatedAt(),
+                t.getCompletedAt()
+        );
     }
 }

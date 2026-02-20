@@ -1,15 +1,11 @@
 package com.example.grannfix.user.controller;
 
 import com.example.grannfix.user.service.UserService;
-import com.example.grannfix.user.dto.AdminUserDto;
 import com.example.grannfix.user.dto.MeUserDto;
 import com.example.grannfix.user.dto.PublicUserDto;
 import com.example.grannfix.user.dto.UpdateMeRequest;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +30,12 @@ public class UserController {
     public MeUserDto updateMe(@AuthenticationPrincipal String userId,
                               @Valid @RequestBody UpdateMeRequest req) {
         return userService.updateMe(UUID.fromString(userId), req);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> removeMe(@AuthenticationPrincipal String userId) {
+        userService.removeMe(UUID.fromString(userId));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

@@ -18,7 +18,6 @@ public class OtpService {
         return code;
     }
 
-
     public boolean verify(String phoneNumber, String code) {
         OtpEntry entry = store.get(phoneNumber);
         if (entry == null) return false;

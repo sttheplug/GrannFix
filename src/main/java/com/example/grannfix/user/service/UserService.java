@@ -37,9 +37,11 @@ public class UserService {
 
     @Transactional
     public MeUserDto updateMe(UUID userId, UpdateMeRequest req) {
-        User u = userRepository.findByIdAndActiveTrue(userId)
+        User u = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
+        if (!u.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
+        }
         if (req.name() != null) u.setName(req.name());
         if (req.bio() != null) u.setBio(req.bio());
         if (req.street() != null) u.setStreet(req.street());
@@ -59,11 +61,23 @@ public class UserService {
         return mapToMeDto(u);
     }
 
-    @Transactional(readOnly = true)
-    public PublicUserDto getPublicUser(UUID id) {
-        User u = userRepository.findByIdAndActiveTrue(id)
+    @Transactional
+    public void removeMe(UUID userId){
+        User u = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (!u.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
+        }
+        u.setActive(false);
+    }
 
+    @Transactional(readOnly = true)
+    public PublicUserDto getPublicUser(UUID userId) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (!u.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
+        }
         return mapToPublicDto(u);
     }
     @Transactional(readOnly = true)
@@ -75,7 +89,8 @@ public class UserService {
     public void removeUser(UUID userId) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        userRepository.deleteById(u.getId());
+        u.setActive(false);
+        userRepository.save(u);
     }
 
     private void updateAreaIfChanged(User user, String requestedArea) {
