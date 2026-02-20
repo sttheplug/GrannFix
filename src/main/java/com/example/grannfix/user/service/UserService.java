@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -38,10 +40,10 @@ public class UserService {
         User u = userRepository.findByIdAndActiveTrue(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        u.setName(req.name());
-        u.setBio(req.bio());
-        u.setArea(req.area());
-        u.setStreet(req.street());
+        if (req.name() != null) u.setName(req.name());
+        if (req.bio() != null) u.setBio(req.bio());
+        if (req.street() != null) u.setStreet(req.street());
+        updateAreaIfChanged(u, req.area());
 
         if (req.email() != null && !req.email().isBlank()) {
             String newEmail = req.email().trim().toLowerCase();
@@ -74,6 +76,30 @@ public class UserService {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         userRepository.deleteById(u.getId());
+    }
+
+    private void updateAreaIfChanged(User user, String requestedArea) {
+        if (requestedArea == null || requestedArea.isBlank()) {
+            return;
+        }
+        String newArea = requestedArea.trim();
+        if (user.getArea() != null &&
+                user.getArea().equalsIgnoreCase(newArea)) {
+            return;
+        }
+        if (user.getAreaUpdatedAt() != null) {
+            Instant nextAllowed = user.getAreaUpdatedAt()
+                    .plus(Duration.ofDays(7));
+
+            if (Instant.now().isBefore(nextAllowed)) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "AREA_CHANGE_COOLDOWN"
+                );
+            }
+        }
+        user.setArea(newArea);
+        user.setAreaUpdatedAt(Instant.now());
     }
 
     private MeUserDto mapToMeDto(User u) {

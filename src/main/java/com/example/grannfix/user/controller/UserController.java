@@ -8,6 +8,7 @@ import com.example.grannfix.user.dto.UpdateMeRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -46,9 +47,11 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/remove/{id}")
-    public void removeUser(@PathVariable UUID id) {
+    @DeleteMapping("/admin/users/{id}")
+    public ResponseEntity<Void> removeUser(@PathVariable UUID id) {
         userService.removeUser(id);
+        return ResponseEntity.noContent().build();
     }
+
 
 }

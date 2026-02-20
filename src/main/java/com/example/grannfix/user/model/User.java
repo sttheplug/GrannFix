@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Getter @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,7 +23,7 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    @Column
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -56,6 +56,9 @@ public class User {
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Column
+    private Instant areaUpdatedAt;
 
     @Builder.Default
     @Column(nullable = false)

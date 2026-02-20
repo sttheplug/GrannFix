@@ -1,5 +1,7 @@
-package com.example.grannfix.auth.security;
+package com.example.grannfix.config;
 
+import com.example.grannfix.auth.security.JwtAuthenticationFilter;
+import com.example.grannfix.auth.security.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,9 +27,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/me").authenticated()
+
                         .requestMatchers("/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/users/*").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/tasks/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/tasks/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/tasks/**").authenticated()
+
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
