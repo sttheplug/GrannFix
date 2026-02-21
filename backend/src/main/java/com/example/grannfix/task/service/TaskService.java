@@ -2,7 +2,9 @@ package com.example.grannfix.task.service;
 
 import com.example.grannfix.task.dto.CreateTaskRequest;
 import com.example.grannfix.task.dto.TaskResponse;
+import com.example.grannfix.task.mapper.TaskMapper;
 import com.example.grannfix.task.model.Task;
+import com.example.grannfix.task.model.TaskStatus;
 import com.example.grannfix.task.repository.TaskRepository;
 import com.example.grannfix.user.model.User;
 import com.example.grannfix.user.repository.UserRepository;
@@ -19,10 +21,12 @@ import java.util.UUID;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final TaskMapper mapper;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, TaskMapper mapper) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.mapper = mapper;
     }
     @Transactional
     public Task addTask(UUID createdById, CreateTaskRequest req) {
@@ -56,26 +60,33 @@ public class TaskService {
         if (!userRepository.existsByIdAndActiveTrue(userId)) {
             throw new IllegalArgumentException("User not found: " + userId);
         }
-        return taskRepository.findByCreatedBy_Id(userId)
+        return taskRepository.findByCreatedBy_IdAndActiveTrue(userId)
                 .stream()
-                .map(this::toResponse)
+                .map(mapper::toResponse)
                 .toList();
     }
+    @Transactional
+    public void deleteMyTask(UUID userId, UUID taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
-    private TaskResponse toResponse(Task t) {
-        return new TaskResponse(
-                t.getId(),
-                t.getTitle(),
-                t.getDescription(),
-                t.getCity(),
-                t.getArea(),
-                t.getStreet(),
-                t.getOfferedPrice(),
-                t.getStatus(),
-                t.isActive(),
-                t.getCreatedAt(),
-                t.getUpdatedAt(),
-                t.getCompletedAt()
-        );
+        if (!task.getCreatedBy().getId().equals(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You can only delete your own tasks."
+            );
+        }
+
+        if (task.getStatus() == TaskStatus.ASSIGNED ||
+                task.getStatus() == TaskStatus.COMPLETED) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Assigned or completed tasks cannot be deleted."
+            );
+        }
+        task.setActive(false);
     }
+
 }

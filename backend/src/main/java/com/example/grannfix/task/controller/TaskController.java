@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,5 +37,22 @@ public class TaskController {
     @GetMapping("/me")
     public List<TaskResponse> getMyTasks(@AuthenticationPrincipal String userId) {
         return taskService.getMyTasks(UUID.fromString(userId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(
+            @AuthenticationPrincipal String userId,
+            @PathVariable UUID id
+    ) {
+        taskService.deleteMyTask(UUID.fromString(userId), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public List<TaskResponse> getTasks(
+            @RequestParam(required = false) Instant cursor,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        return taskService.getTasks(cursor, limit);
     }
 }
