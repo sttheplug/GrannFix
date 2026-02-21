@@ -24,13 +24,13 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<Task> createTask(
+    public ResponseEntity<TaskResponse> createTask(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody CreateTaskRequest req) {
 
-        Task savedTask = taskService.addTask(UUID.fromString(userId), req);
+        TaskResponse savedTask = taskService.addTask(UUID.fromString(userId), req);
         return ResponseEntity
-                .created(URI.create("/tasks/" + savedTask.getId()))
+                .created(URI.create("/tasks/" + savedTask.id()))
                 .body(savedTask);
     }
 
@@ -46,13 +46,5 @@ public class TaskController {
     ) {
         taskService.deleteMyTask(UUID.fromString(userId), id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    public List<TaskResponse> getTasks(
-            @RequestParam(required = false) Instant cursor,
-            @RequestParam(defaultValue = "20") int limit
-    ) {
-        return taskService.getTasks(cursor, limit);
     }
 }

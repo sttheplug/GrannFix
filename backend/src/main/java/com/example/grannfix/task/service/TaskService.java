@@ -29,7 +29,7 @@ public class TaskService {
         this.mapper = mapper;
     }
     @Transactional
-    public Task addTask(UUID createdById, CreateTaskRequest req) {
+    public TaskResponse addTask(UUID createdById, CreateTaskRequest req) {
         User createdBy = userRepository.findById(createdById)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + createdById));
 
@@ -53,7 +53,8 @@ public class TaskService {
                 .street(req.street() != null ? req.street().trim() : null)
                 .offeredPrice(price)
                 .build();
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        return mapper.toResponse(saved);
     }
     @Transactional(readOnly = true)
     public List<TaskResponse> getMyTasks(UUID userId) {
@@ -65,6 +66,7 @@ public class TaskService {
                 .map(mapper::toResponse)
                 .toList();
     }
+
     @Transactional
     public void deleteMyTask(UUID userId, UUID taskId) {
         Task task = taskRepository.findById(taskId)
