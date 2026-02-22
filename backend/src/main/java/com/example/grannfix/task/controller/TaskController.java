@@ -2,7 +2,7 @@ package com.example.grannfix.task.controller;
 
 import com.example.grannfix.task.dto.CreateTaskRequest;
 import com.example.grannfix.task.dto.TaskResponse;
-import com.example.grannfix.task.model.Task;
+import com.example.grannfix.task.dto.UpdateTaskRequest;
 import com.example.grannfix.task.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +36,16 @@ public class TaskController {
     @GetMapping("/me")
     public List<TaskResponse> getMyTasks(@AuthenticationPrincipal String userId) {
         return taskService.getMyTasks(UUID.fromString(userId));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<TaskResponse> updateMyTask(
+            @AuthenticationPrincipal String userId,
+            @PathVariable UUID id,
+            @RequestBody @Valid UpdateTaskRequest req
+    ) {
+        return ResponseEntity.ok(taskService.updateMyTask(
+                UUID.fromString(userId), id, req));
     }
 
     @DeleteMapping("/{id}")

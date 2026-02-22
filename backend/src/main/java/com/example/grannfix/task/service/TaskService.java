@@ -2,6 +2,7 @@ package com.example.grannfix.task.service;
 
 import com.example.grannfix.task.dto.CreateTaskRequest;
 import com.example.grannfix.task.dto.TaskResponse;
+import com.example.grannfix.task.dto.UpdateTaskRequest;
 import com.example.grannfix.task.mapper.TaskMapper;
 import com.example.grannfix.task.model.Task;
 import com.example.grannfix.task.model.TaskStatus;
@@ -65,6 +66,55 @@ public class TaskService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public TaskResponse updateMyTask(UUID userId, UUID taskId, UpdateTaskRequest req) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        if (!task.getCreatedBy().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own tasks.");
+        }
+
+        if (!task.isActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inactive tasks cannot be updated.");
+        }
+
+        if (task.getStatus() == TaskStatus.ASSIGNED || task.getStatus() == TaskStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assigned or completed tasks cannot be updated.");
+        }
+
+        if (req.offeredPrice() != null) {
+            task.setOfferedPrice(req.offeredPrice());
+        }
+
+        if (req.title() != null) {
+            String v = req.title().trim();
+            if (v.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "title cannot be blank");
+            task.setTitle(v);
+        }
+        if (req.description() != null) {
+            String v = req.description().trim();
+            if (v.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "description cannot be blank");
+            task.setDescription(v);
+        }
+        if (req.city() != null) {
+            String v = req.city().trim();
+            if (v.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "city cannot be blank");
+            task.setCity(v);
+        }
+        if (req.area() != null) {
+            String v = req.area().trim();
+            if (v.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "area cannot be blank");
+            task.setArea(v);
+        }
+        if (req.street() != null) {
+            String v = req.street().trim();
+            task.setStreet(v.isEmpty() ? null : v);
+        }
+        Task saved = taskRepository.save(task);
+        return mapper.toResponse(saved);
     }
 
     @Transactional

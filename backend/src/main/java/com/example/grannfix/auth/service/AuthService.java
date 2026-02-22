@@ -1,8 +1,6 @@
 package com.example.grannfix.auth.service;
 
-import com.example.grannfix.auth.dto.LoginRequest;
-import com.example.grannfix.auth.dto.RegisterRequest;
-import com.example.grannfix.auth.dto.AuthResponse;
+import com.example.grannfix.auth.dto.*;
 import com.example.grannfix.auth.model.PasswordResetToken;
 import com.example.grannfix.auth.security.JwtService;
 import com.example.grannfix.auth.sms.SmsSender;
