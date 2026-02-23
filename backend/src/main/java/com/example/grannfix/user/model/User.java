@@ -33,6 +33,9 @@ public class User {
     private String bio;
 
     @Column(nullable = false)
+    private String city;
+
+    @Column(nullable = false)
     private String area;
 
     @Column

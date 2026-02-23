@@ -7,8 +7,9 @@ import java.util.UUID;
 public record AdminUserDto(
         UUID id,
         String name,
-        String email,        // new field
-        String phoneNumber,  // new field
+        String email,
+        String phoneNumber,
+        String city,
         String area,
         boolean active,
         boolean verified,

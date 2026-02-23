@@ -6,8 +6,9 @@ public record PublicUserDto(
         UUID id,
         String name,
         String bio,
+        String city,
         String area,
         Double ratingAverage,
         Integer ratingCount,
-        String phoneNumber // optional, could be null
+        String phoneNumber
 ) {}

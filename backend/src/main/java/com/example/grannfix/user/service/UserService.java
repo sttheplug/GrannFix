@@ -21,6 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     @Transactional(readOnly = true)
     public MeUserDto getMe(UUID userId) {
@@ -43,7 +44,7 @@ public class UserService {
         if (req.name() != null) u.setName(req.name());
         if (req.bio() != null) u.setBio(req.bio());
         if (req.street() != null) u.setStreet(req.street());
-        updateAreaIfChanged(u, req.area());
+        updateLocationIfChanged(u, req.city(), req.area());
 
         if (req.email() != null && !req.email().isBlank()) {
             String newEmail = req.email().trim().toLowerCase();
@@ -87,17 +88,36 @@ public class UserService {
     public void removeUser(UUID userId) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (!u.isActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already inactive");
+        }
         u.setActive(false);
-        userRepository.save(u);
     }
 
-    private void updateAreaIfChanged(User user, String requestedArea) {
-        if (requestedArea == null || requestedArea.isBlank()) {
+    @Transactional
+    public void reactivateUser(UUID userId) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (u.isActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already active");
+        }
+        u.setActive(true);
+    }
+
+    private void updateLocationIfChanged(User user, String requestedCity, String requestedArea) {
+
+        if (requestedCity == null || requestedCity.isBlank() ||
+                requestedArea == null || requestedArea.isBlank()) {
             return;
         }
+        String newCity = requestedCity.trim();
         String newArea = requestedArea.trim();
-        if (user.getArea() != null &&
-                user.getArea().equalsIgnoreCase(newArea)) {
+
+        boolean sameLocation =
+                newCity.equalsIgnoreCase(user.getCity()) &&
+                        newArea.equalsIgnoreCase(user.getArea());
+
+        if (sameLocation) {
             return;
         }
         if (user.getAreaUpdatedAt() != null) {
@@ -107,10 +127,11 @@ public class UserService {
             if (Instant.now().isBefore(nextAllowed)) {
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT,
-                        "AREA_CHANGE_COOLDOWN"
+                        "LOCATION_CHANGE_COOLDOWN"
                 );
             }
         }
+        user.setCity(newCity);
         user.setArea(newArea);
         user.setAreaUpdatedAt(Instant.now());
     }
@@ -122,6 +143,7 @@ public class UserService {
                 u.getEmail(),
                 u.getName(),
                 u.getBio(),
+                u.getCity(),
                 u.getArea(),
                 u.getStreet(),
                 u.isVerified()
@@ -133,6 +155,7 @@ public class UserService {
                 u.getId(),
                 u.getName(),
                 u.getBio(),
+                u.getCity(),
                 u.getArea(),
                 u.getRatingAverage() != null ? u.getRatingAverage() : 0.0,
                 u.getRatingCount() != null ? u.getRatingCount() : 0,
@@ -146,6 +169,7 @@ public class UserService {
                 u.getName(),
                 u.getEmail(),
                 u.getPhoneNumber(),
+                u.getCity(),
                 u.getArea(),
                 u.isActive(),
                 u.isVerified(),

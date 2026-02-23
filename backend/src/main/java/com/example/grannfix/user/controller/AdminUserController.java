@@ -20,6 +20,12 @@ public class AdminUserController {
         this.userService = userService;
     }
 
+    @PostMapping("/{id}:reactivate")
+    public ResponseEntity<Void> reactivateUser(@PathVariable UUID id) {
+        userService.reactivateUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public Page<AdminUserDto> getAllUsers(Pageable pageable) {
         return userService.getAllUsers(pageable);

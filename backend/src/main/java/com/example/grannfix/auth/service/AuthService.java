@@ -73,7 +73,8 @@ public class AuthService {
                 .phoneNumber(req.phoneNumber())
                 .password(passwordEncoder.encode(req.password()))
                 .name(req.name())
-                .area("Unknown")
+                .city(req.city().trim())
+                .area(req.area().trim())
                 .active(true)
                 .verified(false)
                 .build();
@@ -161,6 +162,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getName(),
                 user.getBio(),
+                user.getCity(),
                 user.getArea(),
                 user.getStreet(),
                 user.isVerified()

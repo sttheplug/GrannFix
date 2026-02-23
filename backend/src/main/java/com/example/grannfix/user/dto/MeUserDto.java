@@ -8,6 +8,7 @@ public record MeUserDto(
         String email,
         String name,
         String bio,
+        String city,
         String area,
         String street,
         boolean verified

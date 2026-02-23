@@ -7,7 +7,8 @@ import jakarta.validation.constraints.Size;
 public record UpdateMeRequest(
         @NotBlank @Size(max = 80) String name,
         @Size(max = 500) String bio,
+        @NotBlank @Size(max = 80) String city,
         @NotBlank @Size(max = 80) String area,
         @Size(max = 120) String street,
-        @Email @Size(max = 120) String email // new optional field
+        @Email @Size(max = 120) String email
 ) {}
