@@ -1,6 +1,7 @@
 package com.example.grannfix.task.controller;
 
 import com.example.grannfix.task.dto.CreateTaskRequest;
+import com.example.grannfix.task.dto.TaskDetailResponse;
 import com.example.grannfix.task.dto.TaskResponse;
 import com.example.grannfix.task.dto.UpdateTaskRequest;
 import com.example.grannfix.task.service.TaskService;
@@ -24,36 +25,46 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskResponse> createTask(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @Valid @RequestBody CreateTaskRequest req) {
 
-        TaskResponse savedTask = taskService.addTask(UUID.fromString(userId), req);
+        TaskResponse savedTask = taskService.addTask(userId, req);
         return ResponseEntity
                 .created(URI.create("/tasks/" + savedTask.id()))
                 .body(savedTask);
     }
 
     @GetMapping("/me")
-    public List<TaskResponse> getMyTasks(@AuthenticationPrincipal String userId) {
-        return taskService.getMyTasks(UUID.fromString(userId));
+    public List<TaskResponse> getMyTasks(@AuthenticationPrincipal UUID userId) {
+        return taskService.getMyTasks(userId);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TaskDetailResponse> getTask(
+            @AuthenticationPrincipal UUID userId,
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(
+                taskService.getTaskById(userId, id)
+        );
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<TaskResponse> updateMyTask(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @PathVariable UUID id,
             @RequestBody @Valid UpdateTaskRequest req
     ) {
         return ResponseEntity.ok(taskService.updateMyTask(
-                UUID.fromString(userId), id, req));
+                userId, id, req));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @PathVariable UUID id
     ) {
-        taskService.deleteMyTask(UUID.fromString(userId), id);
+        taskService.deleteMyTask(userId, id);
         return ResponseEntity.noContent().build();
     }
 }

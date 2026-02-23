@@ -1,6 +1,7 @@
 package com.example.grannfix.task.service;
 
 import com.example.grannfix.task.dto.CreateTaskRequest;
+import com.example.grannfix.task.dto.TaskDetailResponse;
 import com.example.grannfix.task.dto.TaskResponse;
 import com.example.grannfix.task.dto.UpdateTaskRequest;
 import com.example.grannfix.task.mapper.TaskMapper;
@@ -9,6 +10,7 @@ import com.example.grannfix.task.model.TaskStatus;
 import com.example.grannfix.task.repository.TaskRepository;
 import com.example.grannfix.user.model.User;
 import com.example.grannfix.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,16 +21,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
+
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final TaskMapper mapper;
-
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository, TaskMapper mapper) {
-        this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
-        this.mapper = mapper;
-    }
     @Transactional
     public TaskResponse addTask(UUID createdById, CreateTaskRequest req) {
         User createdBy = userRepository.findById(createdById)
@@ -66,6 +64,49 @@ public class TaskService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TaskDetailResponse getTaskById(UUID userId, UUID taskId) {
+
+        Task task = taskRepository.findByIdAndActiveTrue(taskId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+
+        boolean isOwner = task.getCreatedBy().getId().equals(userId);
+        if (!isOwner && task.getStatus() != TaskStatus.OPEN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        boolean canEdit = isOwner && task.isActive() && task.getStatus() == TaskStatus.OPEN;
+        boolean canCancel = isOwner && task.isActive() &&
+                (task.getStatus() == TaskStatus.OPEN || task.getStatus() == TaskStatus.ASSIGNED);
+        boolean canOffer = userId != null && !isOwner && task.isActive();
+        boolean canChat = isOwner && task.isActive() && task.getStatus() == TaskStatus.ASSIGNED;
+
+        var createdBy = new TaskDetailResponse.UserSummary(
+                task.getCreatedBy().getId(),
+                task.getCreatedBy().getName()
+        );
+
+        return new TaskDetailResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getCity(),
+                task.getArea(),
+                task.getStreet(),
+                task.getOfferedPrice(),
+                task.getStatus(),
+                task.isActive(),
+                task.getCreatedAt(),
+                task.getUpdatedAt(),
+                task.getCompletedAt(),
+                createdBy,
+                null,
+                null,
+                new TaskDetailResponse.Permissions(canEdit, canCancel, canOffer, canChat)
+        );
     }
 
     @Transactional

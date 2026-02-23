@@ -6,6 +6,7 @@ import com.example.grannfix.user.dto.MeUserDto;
 import com.example.grannfix.user.dto.PublicUserDto;
 import com.example.grannfix.user.dto.UpdateMeRequest;
 import com.example.grannfix.user.model.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,12 +19,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
     @Transactional(readOnly = true)
     public MeUserDto getMe(UUID userId) {
         User u = userRepository.findById(userId)

@@ -22,19 +22,19 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public MeUserDto getMe(@AuthenticationPrincipal String userId) {
-        return userService.getMe(UUID.fromString(userId));
+    public MeUserDto getMe(@AuthenticationPrincipal UUID userId) {
+        return userService.getMe(userId);
     }
 
-    @PutMapping("/me")
-    public MeUserDto updateMe(@AuthenticationPrincipal String userId,
+    @PatchMapping("/me")
+    public MeUserDto updateMe(@AuthenticationPrincipal UUID userId,
                               @Valid @RequestBody UpdateMeRequest req) {
-        return userService.updateMe(UUID.fromString(userId), req);
+        return userService.updateMe(userId, req);
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Void> removeMe(@AuthenticationPrincipal String userId) {
-        userService.removeMe(UUID.fromString(userId));
+    public ResponseEntity<Void> removeMe(@AuthenticationPrincipal UUID userId) {
+        userService.removeMe(userId);
         return ResponseEntity.noContent().build();
     }
 

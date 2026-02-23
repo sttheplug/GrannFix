@@ -7,7 +7,7 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Data
+@Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
 @Table(name = "password_reset_tokens")
 public class PasswordResetToken {

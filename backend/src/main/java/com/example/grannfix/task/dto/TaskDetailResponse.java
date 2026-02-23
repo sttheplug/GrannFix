@@ -1,0 +1,36 @@
+package com.example.grannfix.task.dto;
+
+import com.example.grannfix.task.model.TaskStatus;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
+public record TaskDetailResponse(
+        UUID id,
+        String title,
+        String description,
+        String city,
+        String area,
+        String street,
+        BigDecimal offeredPrice,
+        TaskStatus status,
+        boolean active,
+        Instant createdAt,
+        Instant updatedAt,
+        Instant completedAt,
+
+        UserSummary createdBy,
+        Integer offersCount,
+        UUID chatId,
+        Permissions permissions
+) {
+    public record UserSummary(UUID id, String name) {}
+
+    public record Permissions(
+            boolean canEdit,
+            boolean canCancel,
+            boolean canOffer,
+            boolean canChat
+    ) {}
+}

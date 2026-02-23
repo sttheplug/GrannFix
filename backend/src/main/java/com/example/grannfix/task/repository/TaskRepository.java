@@ -10,10 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findByCreatedBy_IdAndActiveTrue(UUID userId);
+    Optional<Task> findByIdAndActiveTrue(UUID taskId);
     @Query("""
         SELECT t FROM Task t
         WHERE t.active = true

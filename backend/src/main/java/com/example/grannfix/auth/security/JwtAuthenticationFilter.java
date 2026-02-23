@@ -14,13 +14,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private final JwtService jwtService;
-
     public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
     }
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
@@ -40,17 +37,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = header.substring(7);
+        String token = header.substring(7).trim();
+        if (token.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         try {
             UUID userId = jwtService.extractUserId(token);
             String role = jwtService.extractRole(token);
 
+            String normalizedRole = (role == null || role.isBlank()) ? "USER" : role.trim().toUpperCase();
+
+            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + normalizedRole));
+
             var auth = new UsernamePasswordAuthenticationToken(
-                    userId.toString(),
+                    userId,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    authorities
             );
+
+            auth.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
+                    .buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(auth);
 

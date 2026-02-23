@@ -8,6 +8,7 @@ import com.example.grannfix.task.model.Task;
 import com.example.grannfix.task.model.TaskStatus;
 import com.example.grannfix.task.repository.TaskRepository;
 import com.example.grannfix.task.util.CursorCodec;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,14 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TaskQueryService {
+
     private final TaskRepository taskRepository;
     private final TaskMapper mapper;
-
-    public TaskQueryService(TaskRepository taskRepository, TaskMapper mapper) {
-        this.taskRepository = taskRepository;
-        this.mapper = mapper;
-    }
     @Transactional(readOnly = true)
     public CursorPageResponse<TaskResponse> listTasks(
             String cursor,

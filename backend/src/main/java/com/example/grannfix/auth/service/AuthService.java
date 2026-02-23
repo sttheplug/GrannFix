@@ -7,6 +7,7 @@ import com.example.grannfix.auth.sms.SmsSender;
 import com.example.grannfix.user.repository.UserRepository;
 import com.example.grannfix.user.dto.MeUserDto;
 import com.example.grannfix.user.model.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.util.Base64;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -29,18 +31,6 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailSender emailSender;
     private final SmsSender smsSender;
-
-    public AuthService(UserRepository userRepository,
-                       JwtService jwtService,
-                       PasswordEncoder passwordEncoder, OtpService otpService, PasswordResetTokenRepository passwordResetTokenRepository, EmailSender emailSender, SmsSender smsSender) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
-        this.otpService = otpService;
-        this.passwordResetTokenRepository = passwordResetTokenRepository;
-        this.emailSender = emailSender;
-        this.smsSender = smsSender;
-    }
 
     public void sendOtp(String phoneNumber) {
         phoneNumber = normalizePhone(phoneNumber);
