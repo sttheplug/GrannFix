@@ -8,6 +8,7 @@ import com.example.grannfix.task.mapper.TaskMapper;
 import com.example.grannfix.task.model.Task;
 import com.example.grannfix.task.model.TaskStatus;
 import com.example.grannfix.task.repository.TaskRepository;
+import com.example.grannfix.user.dto.PublicUserDto;
 import com.example.grannfix.user.model.User;
 import com.example.grannfix.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -156,6 +157,33 @@ public class TaskService {
         }
         Task saved = taskRepository.save(task);
         return mapper.toResponse(saved);
+    }
+
+    @Transactional
+    public void cancelMyTask(UUID userId, UUID taskId){
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+        if (!task.getCreatedBy().getId().equals(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You can only cancel your own tasks."
+            );
+        }
+        if (!task.isActive()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Task is already inactive."
+            );
+        }
+        if (task.getStatus() == TaskStatus.COMPLETED ||
+                task.getStatus() == TaskStatus.CANCELLED) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Task cannot be cancelled."
+            );
+        }
+        task.setStatus(TaskStatus.CANCELLED);
     }
 
     @Transactional
