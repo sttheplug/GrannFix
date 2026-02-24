@@ -2,6 +2,7 @@ package com.example.grannfix.user.controller;
 
 import com.example.grannfix.user.dto.AdminUserDto;
 import com.example.grannfix.user.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +14,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor
 public class AdminUserController {
-    private final UserService userService;
 
-    public AdminUserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserService userService;
 
     @PostMapping("/{id}:reactivate")
     public ResponseEntity<Void> reactivateUser(@PathVariable UUID id) {

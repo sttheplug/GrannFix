@@ -78,7 +78,6 @@ public class AuthService {
                 .active(true)
                 .verified(false)
                 .build();
-
         userRepository.save(user);
         return buildAuthResponse(user);
     }

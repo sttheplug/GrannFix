@@ -6,6 +6,7 @@ import com.example.grannfix.task.dto.TaskResponse;
 import com.example.grannfix.task.dto.UpdateTaskRequest;
 import com.example.grannfix.task.service.TaskService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +17,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/tasks")
+@RequiredArgsConstructor
 public class TaskController {
-    private final TaskService taskService;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
+    private final TaskService taskService;
 
     @PostMapping
     public ResponseEntity<TaskResponse> createTask(

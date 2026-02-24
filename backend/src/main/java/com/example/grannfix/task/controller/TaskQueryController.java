@@ -4,16 +4,15 @@ import com.example.grannfix.task.dto.CursorPageResponse;
 import com.example.grannfix.task.dto.TaskResponse;
 import com.example.grannfix.task.model.TaskStatus;
 import com.example.grannfix.task.service.TaskQueryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/tasks")
+@RequiredArgsConstructor
 public class TaskQueryController {
-    private final TaskQueryService taskQueryService;
 
-    public TaskQueryController(TaskQueryService taskQueryService) {
-        this.taskQueryService = taskQueryService;
-    }
+    private final TaskQueryService taskQueryService;
 
     @GetMapping
     public CursorPageResponse<TaskResponse> listTasks(

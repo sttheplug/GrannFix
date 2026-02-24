@@ -3,17 +3,16 @@ package com.example.grannfix.auth.controller;
 import com.example.grannfix.auth.dto.*;
 import com.example.grannfix.auth.service.AuthService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class AuthController {
-    private final AuthService authService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final AuthService authService;
 
     @PostMapping("/send-otp")
     public ResponseEntity<String> sendOtp(@RequestParam String phoneNumber) {

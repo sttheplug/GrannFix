@@ -1,5 +1,8 @@
 package com.example.grannfix.user.service;
 
+import com.example.grannfix.task.model.Task;
+import com.example.grannfix.task.model.TaskStatus;
+import com.example.grannfix.task.repository.TaskRepository;
 import com.example.grannfix.user.repository.UserRepository;
 import com.example.grannfix.user.dto.AdminUserDto;
 import com.example.grannfix.user.dto.MeUserDto;
@@ -16,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,6 +27,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     @Transactional(readOnly = true)
     public MeUserDto getMe(UUID userId) {
         User u = userRepository.findById(userId)
@@ -56,7 +61,6 @@ public class UserService {
                 u.setEmail(newEmail);
             }
         }
-        userRepository.save(u);
         return mapToMeDto(u);
     }
 
@@ -67,7 +71,7 @@ public class UserService {
         if (!u.isActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is disabled");
         }
-        u.setActive(false);
+        deactivateUserAndCancelTasks(u);
     }
 
     @Transactional(readOnly = true)
@@ -91,8 +95,9 @@ public class UserService {
         if (!u.isActive()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already inactive");
         }
-        u.setActive(false);
+        deactivateUserAndCancelTasks(u);
     }
+
 
     @Transactional
     public void reactivateUser(UUID userId) {
@@ -102,6 +107,17 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already active");
         }
         u.setActive(true);
+    }
+
+    private void deactivateUserAndCancelTasks(User u) {
+        u.setActive(false);
+
+        List<Task> tasks = taskRepository.findByCreatedBy_IdAndStatusIn(
+                u.getId(), List.of(TaskStatus.OPEN, TaskStatus.ASSIGNED)
+        );
+        for (Task task : tasks) {
+            task.setStatus(TaskStatus.CANCELLED);
+        }
     }
 
     private void updateLocationIfChanged(User user, String requestedCity, String requestedArea) {

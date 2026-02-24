@@ -38,7 +38,6 @@ public class TaskQueryService {
         }
 
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
-
         List<Task> rows = taskRepository.findActiveWithCursor(
                 status,
                 blankToNull(city),
