@@ -27,7 +27,6 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
-    private final TaskMapper mapper;
     @Transactional
     public TaskResponse addTask(UUID createdById, CreateTaskRequest req) {
         User createdBy = userRepository.findById(createdById)
@@ -54,7 +53,7 @@ public class TaskService {
                 .offeredPrice(price)
                 .build();
         Task saved = taskRepository.save(task);
-        return mapper.toResponse(saved);
+        return TaskMapper.toResponse(saved);
     }
     @Transactional(readOnly = true)
     public List<TaskResponse> getMyTasks(UUID userId) {
@@ -63,51 +62,20 @@ public class TaskService {
         }
         return taskRepository.findByCreatedBy_IdAndActiveTrue(userId)
                 .stream()
-                .map(mapper::toResponse)
+                .map(TaskMapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public TaskDetailResponse getTaskById(UUID userId, UUID taskId) {
-
         Task task = taskRepository.findByIdAndActiveTrue(taskId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
         boolean isOwner = task.getCreatedBy().getId().equals(userId);
         if (!isOwner && task.getStatus() != TaskStatus.OPEN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-
-        boolean canEdit = isOwner && task.isActive() && task.getStatus() == TaskStatus.OPEN;
-        boolean canCancel = isOwner && task.isActive() &&
-                (task.getStatus() == TaskStatus.OPEN || task.getStatus() == TaskStatus.ASSIGNED);
-        boolean canOffer = userId != null && !isOwner && task.isActive();
-        boolean canChat = isOwner && task.isActive() && task.getStatus() == TaskStatus.ASSIGNED;
-
-        var createdBy = new TaskDetailResponse.UserSummary(
-                task.getCreatedBy().getId(),
-                task.getCreatedBy().getName()
-        );
-
-        return new TaskDetailResponse(
-                task.getId(),
-                task.getTitle(),
-                task.getDescription(),
-                task.getCity(),
-                task.getArea(),
-                task.getStreet(),
-                task.getOfferedPrice(),
-                task.getStatus(),
-                task.isActive(),
-                task.getCreatedAt(),
-                task.getUpdatedAt(),
-                task.getCompletedAt(),
-                createdBy,
-                null,
-                null,
-                new TaskDetailResponse.Permissions(canEdit, canCancel, canOffer, canChat)
-        );
+        return TaskMapper.toDetailResponse(task, userId);
     }
 
     @Transactional
@@ -156,7 +124,7 @@ public class TaskService {
             task.setStreet(v.isEmpty() ? null : v);
         }
         Task saved = taskRepository.save(task);
-        return mapper.toResponse(saved);
+        return TaskMapper.toResponse(saved);
     }
 
     @Transactional

@@ -16,5 +16,6 @@ public record AdminUserDto(
         Role role,
         Double ratingAverage,
         Integer ratingCount,
-        Instant createdAt
+        Instant createdAt,
+        Instant updatedAt
 ) {}

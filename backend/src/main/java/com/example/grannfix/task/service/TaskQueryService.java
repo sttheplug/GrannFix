@@ -21,7 +21,7 @@ import java.util.List;
 public class TaskQueryService {
 
     private final TaskRepository taskRepository;
-    private final TaskMapper mapper;
+
     @Transactional(readOnly = true)
     public CursorPageResponse<TaskResponse> listTasks(
             String cursor,
@@ -51,7 +51,7 @@ public class TaskQueryService {
         List<Task> page = hasMore ? rows.subList(0, safeLimit) : rows;
 
         List<TaskResponse> items = page.stream()
-                .map(mapper::toResponse)
+                .map(TaskMapper::toResponse)
                 .toList();
 
         String nextCursor = null;

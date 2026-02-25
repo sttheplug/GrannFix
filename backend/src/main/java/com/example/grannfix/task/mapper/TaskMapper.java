@@ -1,10 +1,13 @@
 package com.example.grannfix.task.mapper;
 
+import com.example.grannfix.task.dto.TaskDetailResponse;
 import com.example.grannfix.task.dto.TaskResponse;
 import com.example.grannfix.task.model.Task;
-import org.springframework.stereotype.Component;
+import com.example.grannfix.task.model.TaskStatus;
+import lombok.experimental.UtilityClass;
+import java.util.UUID;
 
-@Component
+@UtilityClass
 public class TaskMapper {
     public TaskResponse toResponse(Task t) {
         return new TaskResponse(
@@ -20,6 +23,43 @@ public class TaskMapper {
                 t.getCreatedAt(),
                 t.getUpdatedAt(),
                 t.getCompletedAt()
+        );
+    }
+
+    public TaskDetailResponse toDetailResponse(
+            Task task,
+            UUID viewerUserId
+    ) {
+        if (task == null) return null;
+
+        UUID ownerId = task.getCreatedBy().getId();
+        boolean isOwner = ownerId.equals(viewerUserId);
+
+        boolean canEdit = isOwner && task.isActive() && task.getStatus() == TaskStatus.OPEN;
+        boolean canCancel = isOwner && task.isActive()
+                && (task.getStatus() == TaskStatus.OPEN || task.getStatus() == TaskStatus.ASSIGNED);
+        boolean canOffer = viewerUserId != null && !isOwner && task.isActive() && task.getStatus() == TaskStatus.OPEN;
+        boolean canChat = isOwner && task.isActive() && task.getStatus() == TaskStatus.ASSIGNED;
+
+        var createdBy = new TaskDetailResponse.UserSummary(ownerId, task.getCreatedBy().getName());
+
+        return new TaskDetailResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getCity(),
+                task.getArea(),
+                task.getStreet(),
+                task.getOfferedPrice(),
+                task.getStatus(),
+                task.isActive(),
+                task.getCreatedAt(),
+                task.getUpdatedAt(),
+                task.getCompletedAt(),
+                createdBy,
+                null,
+                null,
+                new TaskDetailResponse.Permissions(canEdit, canCancel, canOffer, canChat)
         );
     }
 }

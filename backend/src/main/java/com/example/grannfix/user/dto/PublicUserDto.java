@@ -8,7 +8,7 @@ public record PublicUserDto(
         String bio,
         String city,
         String area,
-        Double ratingAverage,
-        Integer ratingCount,
-        String phoneNumber
+        double ratingAverage,
+        int ratingCount,
+        boolean verified
 ) {}

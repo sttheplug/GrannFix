@@ -1,6 +1,7 @@
 package com.example.grannfix.user.controller;
 
 import com.example.grannfix.user.dto.AdminUserDto;
+import com.example.grannfix.user.service.AdminUserService;
 import com.example.grannfix.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,22 +18,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminUserController {
 
-    private final UserService userService;
+    private final AdminUserService adminUserService;
 
     @PostMapping("/{id}:reactivate")
     public ResponseEntity<Void> reactivateUser(@PathVariable UUID id) {
-        userService.reactivateUser(id);
+        adminUserService.reactivateUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     public Page<AdminUserDto> getAllUsers(Pageable pageable) {
-        return userService.getAllUsers(pageable);
+        return adminUserService.getAllUsers(pageable);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeUser(@PathVariable UUID id) {
-        userService.removeUser(id);
+    public ResponseEntity<Void> deactivateUser(@PathVariable UUID id) {
+        adminUserService.deactivateUser(id);
         return ResponseEntity.noContent().build();
     }
 }
