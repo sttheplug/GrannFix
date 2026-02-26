@@ -1,7 +1,9 @@
 package com.example.grannfix.user.mapper;
 
-import com.example.grannfix.user.model.User;
-import com.example.grannfix.user.dto.*;
+import com.example.grannfix.user.api.dto.AdminUserDto;
+import com.example.grannfix.user.api.dto.MeUserDto;
+import com.example.grannfix.user.api.dto.PublicUserDto;
+import com.example.grannfix.user.domain.User;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass

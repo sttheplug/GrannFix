@@ -1,59 +1,48 @@
-package com.example.grannfix.task.model;
+package com.example.grannfix.offer.domain;
 
+import com.example.grannfix.task.model.Task;
 import com.example.grannfix.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
-import jakarta.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tasks")
-public class Task {
+@Table(
+    name = "offers",
+    uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"task_id", "helper_id"})
+    }
+)
+public class Offer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_id", nullable = false)
-    private User createdBy;
+    @JoinColumn(name = "task_id", nullable = false)
+    private Task task;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_to_id")
-    private User assignedTo;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "helper_id", nullable = false)
+    private User helper;
 
-    @Column(nullable = false, length = 120)
-    private String title;
+    private BigDecimal proposedPrice;
 
-    @Column(nullable = false, length = 1000)
-    private String description;
-
-    @Column(nullable = false)
-    private String city;
-
-    @Column(nullable = false)
-    private String area;
-
-    @Column
-    private String street;
-
-    @DecimalMin(value = "0.00")
-    private BigDecimal offeredPrice;
+    @Column(length = 500)
+    private String message;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TaskStatus status = TaskStatus.OPEN;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean active = true;
+    private OfferStatus status = OfferStatus.PENDING;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

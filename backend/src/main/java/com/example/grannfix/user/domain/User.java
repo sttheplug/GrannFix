@@ -1,10 +1,7 @@
-package com.example.grannfix.task.model;
+package com.example.grannfix.user.domain;
 
-import com.example.grannfix.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
-import jakarta.validation.constraints.DecimalMin;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -13,26 +10,27 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tasks")
-public class Task {
+@Table(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_id", nullable = false)
-    private User createdBy;
+    @Column(unique = true)
+    private String phoneNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_to_id")
-    private User assignedTo;
+    @Column(unique = true)
+    private String email;
 
-    @Column(nullable = false, length = 120)
-    private String title;
+    @Column(nullable = false)
+    private String password;
 
-    @Column(nullable = false, length = 1000)
-    private String description;
+    @Column(nullable = false)
+    private String name;
+
+    @Column(length = 500)
+    private String bio;
 
     @Column(nullable = false)
     private String city;
@@ -43,17 +41,18 @@ public class Task {
     @Column
     private String street;
 
-    @DecimalMin(value = "0.00")
-    private BigDecimal offeredPrice;
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean verified = false;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TaskStatus status = TaskStatus.OPEN;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean active = true;
+    private Role role = Role.USER;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -61,7 +60,16 @@ public class Task {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    private Instant completedAt;
+    @Column
+    private Instant areaUpdatedAt;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Double ratingAverage = 0.0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer ratingCount = 0;
 
     @PrePersist
     protected void onCreate() {
