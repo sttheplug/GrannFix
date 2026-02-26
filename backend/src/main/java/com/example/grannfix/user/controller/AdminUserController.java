@@ -31,7 +31,7 @@ public class AdminUserController {
         return adminUserService.getAllUsers(pageable);
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<Void> deactivateUser(@PathVariable UUID id) {
         adminUserService.deactivateUser(id);
         return ResponseEntity.noContent().build();

@@ -80,9 +80,7 @@ public class TaskService {
 
     @Transactional
     public TaskResponse updateMyTask(UUID userId, UUID taskId, UpdateTaskRequest req) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
-
+        Task task = getTaskOrThrow(taskId);
         if (!task.getCreatedBy().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own tasks.");
         }
@@ -129,9 +127,7 @@ public class TaskService {
 
     @Transactional
     public void cancelMyTask(UUID userId, UUID taskId){
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+        Task task = getTaskOrThrow(taskId);
         if (!task.getCreatedBy().getId().equals(userId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
@@ -156,10 +152,7 @@ public class TaskService {
 
     @Transactional
     public void deleteMyTask(UUID userId, UUID taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
-
+        Task task = getTaskOrThrow(taskId);
         if (!task.getCreatedBy().getId().equals(userId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
@@ -176,5 +169,10 @@ public class TaskService {
             );
         }
         task.setActive(false);
+    }
+    private Task getTaskOrThrow(UUID taskId) {
+        return taskRepository.findById(taskId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
     }
 }
