@@ -1,11 +1,9 @@
 package com.example.grannfix.user.application;
 
-import com.example.grannfix.task.domain.Task;
-import com.example.grannfix.task.domain.TaskStatus;
-import com.example.grannfix.task.persistence.TaskRepository;
 import com.example.grannfix.user.api.dto.AdminUserDto;
-import com.example.grannfix.user.mapper.UserMapper;
+import com.example.grannfix.user.application.port.out.TaskManagementPort;
 import com.example.grannfix.user.domain.User;
+import com.example.grannfix.user.mapper.UserMapper;
 import com.example.grannfix.user.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,7 +20,7 @@ import java.util.UUID;
 public class AdminUserService {
 
     private final UserRepository userRepository;
-    private final TaskRepository taskRepository;
+    private final TaskManagementPort taskAdminPort;
 
     @Transactional(readOnly = true)
     public Page<AdminUserDto> getAllUsers(Pageable pageable) {
@@ -33,11 +30,9 @@ public class AdminUserService {
     @Transactional
     public void reactivateUser(UUID userId) {
         User u = getUserOrThrow(userId);
-
         if (u.isActive()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already active");
         }
-
         u.setActive(true);
     }
 
@@ -48,23 +43,12 @@ public class AdminUserService {
         if (!u.isActive()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User already inactive");
         }
-
         u.setActive(false);
-        cancelOpenOrAssignedTasks(u.getId());
+        taskAdminPort.cancelOpenOrAssignedTasksCreatedBy(u.getId());
     }
 
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    }
-
-    private void cancelOpenOrAssignedTasks(UUID userId) {
-        List<Task> tasks = taskRepository.findByCreatedBy_IdAndStatusIn(
-                userId, List.of(TaskStatus.OPEN, TaskStatus.ASSIGNED)
-        );
-
-        for (Task task : tasks) {
-            task.setStatus(TaskStatus.CANCELLED);
-        }
     }
 }

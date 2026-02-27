@@ -1,8 +1,6 @@
 package com.example.grannfix.user.application;
 
-import com.example.grannfix.task.domain.Task;
-import com.example.grannfix.task.domain.TaskStatus;
-import com.example.grannfix.task.persistence.TaskRepository;
+import com.example.grannfix.user.application.port.out.TaskManagementPort;
 import com.example.grannfix.user.mapper.UserMapper;
 import com.example.grannfix.user.persistence.UserRepository;
 import com.example.grannfix.user.api.dto.MeUserDto;
@@ -14,10 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,7 +21,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final TaskRepository taskRepository;
+    private final TaskManagementPort taskUserPort;
     @Transactional(readOnly = true)
     public MeUserDto getMe(UUID userId) {
         return UserMapper.toMeDto(getActiveUserOrThrow(userId));
@@ -55,14 +51,8 @@ public class UserService {
     @Transactional
     public void removeMe(UUID userId){
         User u = getActiveUserOrThrow(userId);
-
         u.setActive(false);
-        List<Task> tasks = taskRepository.findByCreatedBy_IdAndStatusIn(
-                u.getId(), List.of(TaskStatus.OPEN, TaskStatus.ASSIGNED)
-        );
-        for (Task task : tasks) {
-            task.setStatus(TaskStatus.CANCELLED);
-        }
+        taskUserPort.cancelOpenOrAssignedTasksCreatedBy(u.getId());
     }
 
     @Transactional(readOnly = true)
