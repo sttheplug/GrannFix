@@ -1,9 +1,9 @@
-package com.example.grannfix.task.controller;
+package com.example.grannfix.task.api;
 
-import com.example.grannfix.task.dto.CursorPageResponse;
-import com.example.grannfix.task.dto.TaskResponse;
-import com.example.grannfix.task.model.TaskStatus;
-import com.example.grannfix.task.service.TaskQueryService;
+import com.example.grannfix.task.api.dto.CursorPageResponse;
+import com.example.grannfix.task.api.dto.TaskResponse;
+import com.example.grannfix.task.domain.TaskStatus;
+import com.example.grannfix.task.application.TaskQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

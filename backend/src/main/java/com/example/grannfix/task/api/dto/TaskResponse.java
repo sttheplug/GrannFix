@@ -1,6 +1,6 @@
-package com.example.grannfix.task.dto;
+package com.example.grannfix.task.api.dto;
 
-import com.example.grannfix.task.model.TaskStatus;
+import com.example.grannfix.task.domain.TaskStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;

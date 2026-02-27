@@ -1,10 +1,10 @@
-package com.example.grannfix.task.controller;
+package com.example.grannfix.task.api;
 
-import com.example.grannfix.task.dto.CreateTaskRequest;
-import com.example.grannfix.task.dto.TaskDetailResponse;
-import com.example.grannfix.task.dto.TaskResponse;
-import com.example.grannfix.task.dto.UpdateTaskRequest;
-import com.example.grannfix.task.service.TaskService;
+import com.example.grannfix.task.api.dto.CreateTaskRequest;
+import com.example.grannfix.task.api.dto.TaskDetailResponse;
+import com.example.grannfix.task.api.dto.TaskResponse;
+import com.example.grannfix.task.api.dto.UpdateTaskRequest;
+import com.example.grannfix.task.application.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

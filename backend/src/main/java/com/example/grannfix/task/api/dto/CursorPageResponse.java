@@ -1,4 +1,4 @@
-package com.example.grannfix.task.dto;
+package com.example.grannfix.task.api.dto;
 
 import java.util.List;
 

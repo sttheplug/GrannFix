@@ -1,9 +1,9 @@
 package com.example.grannfix.task.mapper;
 
-import com.example.grannfix.task.dto.TaskDetailResponse;
-import com.example.grannfix.task.dto.TaskResponse;
-import com.example.grannfix.task.model.Task;
-import com.example.grannfix.task.model.TaskStatus;
+import com.example.grannfix.task.api.dto.TaskDetailResponse;
+import com.example.grannfix.task.api.dto.TaskResponse;
+import com.example.grannfix.task.domain.Task;
+import com.example.grannfix.task.domain.TaskStatus;
 import lombok.experimental.UtilityClass;
 import java.util.UUID;
 

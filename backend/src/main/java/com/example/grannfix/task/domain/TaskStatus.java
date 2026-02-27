@@ -1,4 +1,4 @@
-package com.example.grannfix.task.model;
+package com.example.grannfix.task.domain;
 
 public enum TaskStatus {
     OPEN,

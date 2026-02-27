@@ -1,13 +1,13 @@
-package com.example.grannfix.task.service;
+package com.example.grannfix.task.application;
 
-import com.example.grannfix.task.dto.CreateTaskRequest;
-import com.example.grannfix.task.dto.TaskDetailResponse;
-import com.example.grannfix.task.dto.TaskResponse;
-import com.example.grannfix.task.dto.UpdateTaskRequest;
+import com.example.grannfix.task.api.dto.CreateTaskRequest;
+import com.example.grannfix.task.api.dto.TaskDetailResponse;
+import com.example.grannfix.task.api.dto.TaskResponse;
+import com.example.grannfix.task.api.dto.UpdateTaskRequest;
 import com.example.grannfix.task.mapper.TaskMapper;
-import com.example.grannfix.task.model.Task;
-import com.example.grannfix.task.model.TaskStatus;
-import com.example.grannfix.task.repository.TaskRepository;
+import com.example.grannfix.task.domain.Task;
+import com.example.grannfix.task.domain.TaskStatus;
+import com.example.grannfix.task.persistence.TaskRepository;
 import com.example.grannfix.user.domain.User;
 import com.example.grannfix.user.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;

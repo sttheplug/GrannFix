@@ -1,6 +1,6 @@
 package com.example.grannfix.offer.domain;
 
-import com.example.grannfix.task.model.Task;
+import com.example.grannfix.task.domain.Task;
 import com.example.grannfix.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;

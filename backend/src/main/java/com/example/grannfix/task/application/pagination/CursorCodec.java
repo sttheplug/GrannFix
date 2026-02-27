@@ -1,6 +1,6 @@
-package com.example.grannfix.task.util;
+package com.example.grannfix.task.application.pagination;
 
-import com.example.grannfix.task.dto.TaskCursor;
+import com.example.grannfix.task.api.dto.TaskCursor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;

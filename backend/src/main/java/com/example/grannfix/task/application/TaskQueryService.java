@@ -1,13 +1,13 @@
-package com.example.grannfix.task.service;
+package com.example.grannfix.task.application;
 
-import com.example.grannfix.task.dto.CursorPageResponse;
-import com.example.grannfix.task.dto.TaskCursor;
-import com.example.grannfix.task.dto.TaskResponse;
+import com.example.grannfix.task.api.dto.CursorPageResponse;
+import com.example.grannfix.task.api.dto.TaskCursor;
+import com.example.grannfix.task.api.dto.TaskResponse;
 import com.example.grannfix.task.mapper.TaskMapper;
-import com.example.grannfix.task.model.Task;
-import com.example.grannfix.task.model.TaskStatus;
-import com.example.grannfix.task.repository.TaskRepository;
-import com.example.grannfix.task.util.CursorCodec;
+import com.example.grannfix.task.domain.Task;
+import com.example.grannfix.task.domain.TaskStatus;
+import com.example.grannfix.task.persistence.TaskRepository;
+import com.example.grannfix.task.application.pagination.CursorCodec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

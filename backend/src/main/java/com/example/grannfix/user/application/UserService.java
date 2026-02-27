@@ -1,8 +1,8 @@
 package com.example.grannfix.user.application;
 
-import com.example.grannfix.task.model.Task;
-import com.example.grannfix.task.model.TaskStatus;
-import com.example.grannfix.task.repository.TaskRepository;
+import com.example.grannfix.task.domain.Task;
+import com.example.grannfix.task.domain.TaskStatus;
+import com.example.grannfix.task.persistence.TaskRepository;
 import com.example.grannfix.user.mapper.UserMapper;
 import com.example.grannfix.user.persistence.UserRepository;
 import com.example.grannfix.user.api.dto.MeUserDto;

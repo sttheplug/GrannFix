@@ -1,7 +1,7 @@
-package com.example.grannfix.task.repository;
+package com.example.grannfix.task.persistence;
 
-import com.example.grannfix.task.model.Task;
-import com.example.grannfix.task.model.TaskStatus;
+import com.example.grannfix.task.domain.Task;
+import com.example.grannfix.task.domain.TaskStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
