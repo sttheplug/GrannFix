@@ -19,7 +19,7 @@ public class TaskAdminAdapter implements TaskManagementPort {
     @Override
     @Transactional
     public void cancelOpenOrAssignedTasksCreatedBy(UUID userId) {
-        List<Task> tasks = taskRepository.findByCreatedBy_IdAndStatusIn(
+        List<Task> tasks = taskRepository.findByCreatedByIdAndStatusIn(
                 userId, List.of(TaskStatus.OPEN, TaskStatus.ASSIGNED)
         );
 

@@ -14,9 +14,9 @@ import java.util.Optional;
 import java.util.UUID;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-    List<Task> findByCreatedBy_IdAndActiveTrue(UUID userId);
+    List<Task> findByCreatedByIdAndActiveTrue(UUID userId);
     Optional<Task> findByIdAndActiveTrue(UUID taskId);
-    List<Task> findByCreatedBy_IdAndStatusIn(UUID userId, List<TaskStatus> statuses);
+    List<Task> findByCreatedByIdAndStatusIn(UUID userId, List<TaskStatus> statuses);
     @Query("""
         SELECT t FROM Task t
         WHERE t.active = true

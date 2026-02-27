@@ -58,7 +58,7 @@ public class TaskController {
                 userId, id, req));
     }
 
-    @PostMapping("/{id}:cancel")
+    @PostMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelTask(
             @AuthenticationPrincipal UUID userId,
             @PathVariable UUID id

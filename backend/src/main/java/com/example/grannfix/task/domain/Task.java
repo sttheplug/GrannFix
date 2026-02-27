@@ -1,6 +1,5 @@
 package com.example.grannfix.task.domain;
 
-import com.example.grannfix.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -20,13 +19,11 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_id", nullable = false)
-    private User createdBy;
+    @Column(name = "created_by_id", nullable = false)
+    private UUID createdById;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_to_id")
-    private User assignedTo;
+    @Column(name = "assigned_to_id")
+    private UUID assignedToId;
 
     @Column(nullable = false, length = 120)
     private String title;

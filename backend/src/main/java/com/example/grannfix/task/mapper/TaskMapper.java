@@ -5,10 +5,12 @@ import com.example.grannfix.task.api.dto.TaskResponse;
 import com.example.grannfix.task.domain.Task;
 import com.example.grannfix.task.domain.TaskStatus;
 import lombok.experimental.UtilityClass;
+
 import java.util.UUID;
 
 @UtilityClass
 public class TaskMapper {
+
     public TaskResponse toResponse(Task t) {
         return new TaskResponse(
                 t.getId(),
@@ -26,13 +28,10 @@ public class TaskMapper {
         );
     }
 
-    public TaskDetailResponse toDetailResponse(
-            Task task,
-            UUID viewerUserId
-    ) {
+    public TaskDetailResponse toDetailResponse(Task task, UUID viewerUserId, String name) {
         if (task == null) return null;
 
-        UUID ownerId = task.getCreatedBy().getId();
+        UUID ownerId = task.getCreatedById();
         boolean isOwner = ownerId.equals(viewerUserId);
 
         boolean canEdit = isOwner && task.isActive() && task.getStatus() == TaskStatus.OPEN;
@@ -41,7 +40,7 @@ public class TaskMapper {
         boolean canOffer = viewerUserId != null && !isOwner && task.isActive() && task.getStatus() == TaskStatus.OPEN;
         boolean canChat = isOwner && task.isActive() && task.getStatus() == TaskStatus.ASSIGNED;
 
-        var createdBy = new TaskDetailResponse.UserSummary(ownerId, task.getCreatedBy().getName());
+        var createdBy = new TaskDetailResponse.UserSummary(ownerId, name);
 
         return new TaskDetailResponse(
                 task.getId(),

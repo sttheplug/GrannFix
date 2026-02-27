@@ -1,15 +1,14 @@
 package com.example.grannfix.task.application;
 
+import com.example.grannfix.common.contracts.UserLookupPort;
 import com.example.grannfix.task.api.dto.CreateTaskRequest;
 import com.example.grannfix.task.api.dto.TaskDetailResponse;
 import com.example.grannfix.task.api.dto.TaskResponse;
 import com.example.grannfix.task.api.dto.UpdateTaskRequest;
-import com.example.grannfix.task.mapper.TaskMapper;
 import com.example.grannfix.task.domain.Task;
 import com.example.grannfix.task.domain.TaskStatus;
+import com.example.grannfix.task.mapper.TaskMapper;
 import com.example.grannfix.task.persistence.TaskRepository;
-import com.example.grannfix.user.domain.User;
-import com.example.grannfix.user.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,25 +24,28 @@ import java.util.UUID;
 public class TaskService {
 
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
+    private final UserLookupPort userLookupPort;
+
     @Transactional
     public TaskResponse addTask(UUID createdById, CreateTaskRequest req) {
-        User createdBy = userRepository.findById(createdById)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + createdById));
+        if (!userLookupPort.existsActive(createdById)) {
+            throw new IllegalArgumentException("User not found: " + createdById);
+        }
 
-        if (!createdBy.isVerified()) {
+        if (!userLookupPort.isVerified(createdById)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Phone number must be verified (OTP) before creating tasks."
             );
         }
+
         BigDecimal price = req.offeredPrice();
         if (price != null && price.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("offeredPrice cannot be negative");
         }
 
         Task task = Task.builder()
-                .createdBy(createdBy)
+                .createdById(createdById)
                 .title(req.title().trim())
                 .description(req.description().trim())
                 .city(req.city().trim())
@@ -54,12 +56,13 @@ public class TaskService {
         Task saved = taskRepository.save(task);
         return TaskMapper.toResponse(saved);
     }
+
     @Transactional(readOnly = true)
     public List<TaskResponse> getMyTasks(UUID userId) {
-        if (!userRepository.existsByIdAndActiveTrue(userId)) {
+        if (!userLookupPort.existsActive(userId)) {
             throw new IllegalArgumentException("User not found: " + userId);
         }
-        return taskRepository.findByCreatedBy_IdAndActiveTrue(userId)
+        return taskRepository.findByCreatedByIdAndActiveTrue(userId)
                 .stream()
                 .map(TaskMapper::toResponse)
                 .toList();
@@ -70,17 +73,19 @@ public class TaskService {
         Task task = taskRepository.findByIdAndActiveTrue(taskId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
 
-        boolean isOwner = task.getCreatedBy().getId().equals(userId);
+        boolean isOwner = task.getCreatedById().equals(userId);
         if (!isOwner && task.getStatus() != TaskStatus.OPEN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        return TaskMapper.toDetailResponse(task, userId);
+        String name = userLookupPort.displayName(task.getCreatedById());
+        return TaskMapper.toDetailResponse(task, userId, name);
     }
 
     @Transactional
     public TaskResponse updateMyTask(UUID userId, UUID taskId, UpdateTaskRequest req) {
         Task task = getTaskOrThrow(taskId);
-        if (!task.getCreatedBy().getId().equals(userId)) {
+
+        if (!task.getCreatedById().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only update your own tasks.");
         }
 
@@ -92,10 +97,7 @@ public class TaskService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assigned or completed tasks cannot be updated.");
         }
 
-        if (req.offeredPrice() != null) {
-            task.setOfferedPrice(req.offeredPrice());
-        }
-
+        if (req.offeredPrice() != null) task.setOfferedPrice(req.offeredPrice());
         if (req.title() != null) {
             String v = req.title().trim();
             if (v.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "title cannot be blank");
@@ -120,31 +122,23 @@ public class TaskService {
             String v = req.street().trim();
             task.setStreet(v.isEmpty() ? null : v);
         }
+
         Task saved = taskRepository.save(task);
         return TaskMapper.toResponse(saved);
     }
 
     @Transactional
-    public void cancelMyTask(UUID userId, UUID taskId){
+    public void cancelMyTask(UUID userId, UUID taskId) {
         Task task = getTaskOrThrow(taskId);
-        if (!task.getCreatedBy().getId().equals(userId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "You can only cancel your own tasks."
-            );
+
+        if (!task.getCreatedById().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only cancel your own tasks.");
         }
         if (!task.isActive()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Task is already inactive."
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is already inactive.");
         }
-        if (task.getStatus() == TaskStatus.COMPLETED ||
-                task.getStatus() == TaskStatus.CANCELLED) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Task cannot be cancelled."
-            );
+        if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task cannot be cancelled.");
         }
         task.setStatus(TaskStatus.CANCELLED);
     }
@@ -152,26 +146,18 @@ public class TaskService {
     @Transactional
     public void deleteMyTask(UUID userId, UUID taskId) {
         Task task = getTaskOrThrow(taskId);
-        if (!task.getCreatedBy().getId().equals(userId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "You can only delete your own tasks."
-            );
+
+        if (!task.getCreatedById().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only delete your own tasks.");
         }
-
-        if (task.getStatus() == TaskStatus.ASSIGNED ||
-                task.getStatus() == TaskStatus.COMPLETED) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Assigned or completed tasks cannot be deleted."
-            );
+        if (task.getStatus() == TaskStatus.ASSIGNED || task.getStatus() == TaskStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Assigned or completed tasks cannot be deleted.");
         }
         task.setActive(false);
     }
+
     private Task getTaskOrThrow(UUID taskId) {
         return taskRepository.findById(taskId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
     }
 }

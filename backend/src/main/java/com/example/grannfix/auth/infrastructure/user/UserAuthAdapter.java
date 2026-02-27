@@ -3,6 +3,7 @@ package com.example.grannfix.auth.infrastructure.user;
 import com.example.grannfix.auth.application.ports.out.CreateUserCommand;
 import com.example.grannfix.auth.application.ports.out.UserAuthPort;
 import com.example.grannfix.auth.application.ports.out.UserAuthView;
+import com.example.grannfix.common.contracts.UserLookupPort;
 import com.example.grannfix.user.domain.User;
 import com.example.grannfix.user.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class UserAuthAdapter implements UserAuthPort {
+public class UserAuthAdapter implements UserAuthPort, UserLookupPort {
 
     private final UserRepository userRepository;
 
@@ -69,6 +70,24 @@ public class UserAuthAdapter implements UserAuthPort {
         });
     }
 
+    @Override
+    public boolean existsActive(UUID userId) {
+        return userRepository.existsByIdAndActiveTrue(userId);
+    }
+
+    @Override
+    public boolean isVerified(UUID userId) {
+        return userRepository.findById(userId)
+                .map(User::isVerified)
+                .orElse(false);
+    }
+
+    @Override
+    public String displayName(UUID userId) {
+        return userRepository.findById(userId)
+                .map(User::getName)
+                .orElse(null);
+    }
     private UserAuthView toView(User u) {
         return new UserAuthView(
                 u.getId(),
