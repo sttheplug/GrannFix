@@ -1,5 +1,7 @@
 package com.example.grannfix.task.infrastructure;
 
+import com.example.grannfix.common.contracts.TaskOfferPort;
+import com.example.grannfix.common.contracts.TaskOfferView;
 import com.example.grannfix.task.domain.Task;
 import com.example.grannfix.task.domain.TaskStatus;
 import com.example.grannfix.task.persistence.TaskRepository;
@@ -7,13 +9,13 @@ import com.example.grannfix.user.application.port.out.TaskManagementPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class TaskAdminAdapter implements TaskManagementPort {
+public class TaskAdminAdapter implements TaskManagementPort, TaskOfferPort {
 
     private final TaskRepository taskRepository;
     @Override
@@ -26,5 +28,16 @@ public class TaskAdminAdapter implements TaskManagementPort {
         for (Task task : tasks) {
             task.setStatus(TaskStatus.CANCELLED);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<TaskOfferView> findById(UUID taskId) {
+        return taskRepository.findProjectedById(taskId)
+                .map(p -> new TaskOfferView(
+                        p.getId(),
+                        p.getCreatedById(),
+                        p.getStatus() == TaskStatus.OPEN
+                ));
     }
 }

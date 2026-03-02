@@ -1,4 +1,4 @@
-package com.example.grannfix.auth.infrastructure.user;
+package com.example.grannfix.user.infrastructure;
 
 import com.example.grannfix.auth.application.ports.out.CreateUserCommand;
 import com.example.grannfix.auth.application.ports.out.UserAuthPort;

@@ -1,7 +1,5 @@
 package com.example.grannfix.offer.domain;
 
-import com.example.grannfix.task.domain.Task;
-import com.example.grannfix.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -26,13 +24,11 @@ public class Offer {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "task_id", nullable = false)
-    private Task task;
+    @Column(name = "task_id", nullable = false)
+    private UUID taskId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "helper_id", nullable = false)
-    private User helper;
+    @Column(name = "helper_id", nullable = false)
+    private UUID helperId;
 
     private BigDecimal proposedPrice;
 
