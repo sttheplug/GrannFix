@@ -38,14 +38,19 @@ public class TaskQueryService {
         }
 
         Pageable pageable = PageRequest.of(0, safeLimit + 1);
-        List<Task> rows = taskRepository.findActiveWithCursor(
-                status,
-                blankToNull(city),
-                blankToNull(area),
-                decoded != null ? decoded.createdAt() : null,
-                decoded != null ? decoded.id() : null,
-                pageable
-        );
+        List<Task> rows;
+        if (decoded == null) {
+            rows = taskRepository.findActive(status, blankToNull(city), blankToNull(area), pageable);
+        } else {
+            rows = taskRepository.findActiveAfterCursor(
+                    status,
+                    blankToNull(city),
+                    blankToNull(area),
+                    decoded.createdAt(),
+                    decoded.id(),
+                    pageable
+            );
+        }
 
         boolean hasMore = rows.size() > safeLimit;
         List<Task> page = hasMore ? rows.subList(0, safeLimit) : rows;

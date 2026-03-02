@@ -19,19 +19,33 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findByCreatedByIdAndStatusIn(UUID userId, List<TaskStatus> statuses);
     Optional<TaskOfferProjection> findProjectedById(UUID id);
     @Query("""
-        SELECT t FROM Task t
-        WHERE t.active = true
-          AND (:status IS NULL OR t.status = :status)
-          AND (:city IS NULL OR LOWER(t.city) = LOWER(:city))
-          AND (:area IS NULL OR LOWER(t.area) = LOWER(:area))
-          AND (
-                :cursorCreatedAt IS NULL
-                OR t.createdAt < :cursorCreatedAt
-                OR (t.createdAt = :cursorCreatedAt AND t.id < :cursorId)
-          )
-        ORDER BY t.createdAt DESC, t.id DESC
-    """)
-    List<Task> findActiveWithCursor(
+    SELECT t FROM Task t
+    WHERE t.active = true
+      AND (:status IS NULL OR t.status = :status)
+      AND (:city IS NULL OR LOWER(t.city) = LOWER(:city))
+      AND (:area IS NULL OR LOWER(t.area) = LOWER(:area))
+    ORDER BY t.createdAt DESC, t.id DESC
+""")
+    List<Task> findActive(
+            @Param("status") TaskStatus status,
+            @Param("city") String city,
+            @Param("area") String area,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT t FROM Task t
+    WHERE t.active = true
+      AND (:status IS NULL OR t.status = :status)
+      AND (:city IS NULL OR LOWER(t.city) = LOWER(:city))
+      AND (:area IS NULL OR LOWER(t.area) = LOWER(:area))
+      AND (
+            t.createdAt < :cursorCreatedAt
+            OR (t.createdAt = :cursorCreatedAt AND t.id < :cursorId)
+      )
+    ORDER BY t.createdAt DESC, t.id DESC
+""")
+    List<Task> findActiveAfterCursor(
             @Param("status") TaskStatus status,
             @Param("city") String city,
             @Param("area") String area,

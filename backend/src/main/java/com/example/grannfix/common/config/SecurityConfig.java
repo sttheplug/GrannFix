@@ -1,4 +1,4 @@
-package com.example.grannfix.common;
+package com.example.grannfix.common.config;
 
 import com.example.grannfix.auth.infrastructure.security.JwtAuthenticationFilter;
 import com.example.grannfix.auth.infrastructure.security.JwtService;
@@ -27,7 +27,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .requestMatchers("/users/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/users/*").permitAll()
 
